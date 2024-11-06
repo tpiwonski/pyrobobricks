@@ -4,8 +4,15 @@ from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, multitask, run_task
 
-from path import POSITION_INSIDE, POSITION_OUTSIDE, Position
-from application import Application, Forward, Backward, Left, Right, Stop
+from .path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
+from .application import (
+    Application,
+    STRAIGHT_FORWARD,
+    STRAIGHT_BACKWARD,
+    TURN_LEFT,
+    TURN_RIGHT,
+    STOP,
+)
 
 
 left_sensor = ColorDistanceSensor(Port.A)
@@ -23,35 +30,42 @@ async def read_position():
     left_reflection = await left_sensor.reflection()
     right_reflection = await right_sensor.reflection()
 
-    left_position = POSITION_OUTSIDE if left_reflection > 25 else POSITION_INSIDE
-    right_position = POSITION_OUTSIDE if right_reflection > 25 else POSITION_INSIDE
+    left_position = (
+        SENSOR_POSITION_OUTSIDE if left_reflection > 25 else SENSOR_POSITION_INSIDE
+    )
+    right_position = (
+        SENSOR_POSITION_OUTSIDE if right_reflection > 25 else SENSOR_POSITION_INSIDE
+    )
 
-    return Position.create(left_position=left_position, right_position=right_position)
+    return Position.from_sensor_position(
+        left_sensor=left_position, right_sensor=right_position
+    )
 
 
-async def navigate(app: Application):
+async def read_position_and_process(app: Application):
     while True:
         position = await read_position()
-        app.update_move(position)
+        app.process(position)
         app.drive.stop()
         await wait(200)
 
 
-async def move(app):
+async def execute_command(app):
     while True:
-        if app.move == Stop:
+        if app.command == STOP:
             app.drive.brake()
-        elif app.move == Forward:
+        elif app.command == STRAIGHT_FORWARD:
             await app.drive.straight(100)
-        elif app.move == Backward:
+        elif app.command == STRAIGHT_BACKWARD:
             await app.drive.straight(-100)
-        elif app.move == Left:
+        elif app.command == TURN_LEFT:
             await app.drive.turn(-90)
-        elif app.move == Right:
+        elif app.command == TURN_RIGHT:
             await app.drive.turn(90)
 
 
 async def main(app):
-    await multitask(navigate(app), move(app))
+    await multitask(read_position_and_process(app), execute_command(app))
+
 
 run_task(main(application))

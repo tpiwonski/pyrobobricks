@@ -1,47 +1,36 @@
-from path import Path
+from .path import Path
 
 
-MOVE_STOP = 0
-MOVE_FORWARD = 1
-MOVE_RIGHT = 2
-MOVE_BACKWARD = 3
-MOVE_LEFT = 4
+COMMAND_STOP = 0
+COMMAND_STRAIGHT_FORWARD = 1
+COMMAND_STRAIGHT_BACKWARD = 2
+COMMAND_TURN_RIGHT = 3
+COMMAND_TURN_LEFT = 4
 
 
-class Move:
-    def __init__(self, action=MOVE_STOP):
-        self.action = action
+class Command:
+    def __init__(self, command=COMMAND_STOP):
+        self.command = command
 
     def __str__(self):
-        if self.action == MOVE_STOP:
-            return 'Move(STOP)'
-        if self.action == MOVE_FORWARD:
-            return 'Move(FORWARD)'
-        if self.action == MOVE_RIGHT:
-            return 'Move(RIGHT)'
-        if self.action == MOVE_BACKWARD:
-            return 'Move(BACKWARD)'
-        if self.action == MOVE_LEFT:
-            return 'Move(LEFT)'
-        
-        return ''
+        return f"Command({self.command})"
 
 
-Stop = Move(MOVE_STOP)
-Forward = Move(MOVE_FORWARD)
-Backward = Move(MOVE_BACKWARD)
-Right = Move(MOVE_RIGHT)
-Left = Move(MOVE_LEFT)
+STOP = Command(COMMAND_STOP)
+STRAIGHT_FORWARD = Command(COMMAND_STRAIGHT_FORWARD)
+STRAIGHT_BACKWARD = Command(COMMAND_STRAIGHT_BACKWARD)
+TURN_RIGHT = Command(COMMAND_TURN_RIGHT)
+TURN_LEFT = Command(COMMAND_TURN_LEFT)
 
 
 class Application:
     def __init__(self, drive):
         self.drive = drive
-        self.move = Stop
+        self.command = STOP
         self.path = Path()
-    
-    def update_move(self, position):
-        next_move = Stop
+
+    def process(self, position):
+        next_move = STOP
 
         if self.path.count == 0:
             self.path.add_position(position)
@@ -55,26 +44,26 @@ class Application:
         last_side_position = self.path.last_side_position()
 
         if position.is_inside():
-            if self.move == Backward:
+            if self.command == STRAIGHT_BACKWARD:
                 if last_position.is_inside():
                     # if last_side_position.is_right():
                     #     next_move = Left
                     # elif last_side_position.is_left():
                     #     next_move = Right
-                    # else:        
-                    next_move = Backward # Forward
+                    # else:
+                    next_move = STRAIGHT_BACKWARD  # Forward
                 elif last_position.is_right():
-                    next_move = Left
+                    next_move = TURN_LEFT
                 elif last_position.is_left():
-                    next_move = Right
+                    next_move = TURN_RIGHT
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
                     if last_side_position.is_right():
-                        next_move = Left
+                        next_move = TURN_LEFT
                     elif last_side_position.is_left():
-                        next_move = Right
+                        next_move = TURN_RIGHT
                     else:
-                        next_move = Forward
+                        next_move = STRAIGHT_FORWARD
             else:
                 if last_position.is_inside():
                     # if last_side_position.is_right():
@@ -82,36 +71,38 @@ class Application:
                     # elif last_side_position.is_left():
                     #     next_move = Left
                     # else:
-                    next_move = Forward
+                    next_move = STRAIGHT_FORWARD
                 elif last_position.is_right():
-                    next_move = Right
+                    next_move = TURN_RIGHT
                 elif last_position.is_left():
-                    next_move = Left
+                    next_move = TURN_LEFT
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
-                    next_move = Forward
-        
+                    next_move = STRAIGHT_FORWARD
+
         elif position.is_outside():
             if last_position.is_inside():
                 # if last_side_position.is_right():
                 #     next_move = Left
                 # elif last_side_position.is_left():
                 #     next_move = Right
-                # else:        
-                next_move = Backward
+                # else:
+                next_move = STRAIGHT_BACKWARD
             elif last_position.is_right():
-                next_move = Left
+                next_move = TURN_LEFT
             elif last_position.is_left():
-                next_move = Right
+                next_move = TURN_RIGHT
             elif last_position.is_outside() or last_position.unknown():
-                next_move = Forward
-        
+                next_move = STRAIGHT_FORWARD
+
         elif position.is_right():
-            next_move = Forward
+            next_move = STRAIGHT_FORWARD
 
         elif position.is_left():
-            next_move = Forward
-        
-        print(f"last side={last_side_position} last position={last_position} position={position} -> {next_move}")
+            next_move = STRAIGHT_FORWARD
 
-        self.move = next_move
+        print(
+            f"last side={last_side_position} last position={last_position} position={position} -> {next_move}"
+        )
+
+        self.command = next_move
