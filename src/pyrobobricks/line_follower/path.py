@@ -1,23 +1,24 @@
-SENSOR_POSITION_UNKNOWN = 0
-SENSOR_POSITION_OUTSIDE = 1
-SENSOR_POSITION_INSIDE = 2
+from enum import Enum
 
-SENSOR_POSITION_TO_STR = {
-    SENSOR_POSITION_UNKNOWN: "?",
-    SENSOR_POSITION_OUTSIDE: "-",
-    SENSOR_POSITION_INSIDE: "+",
-}
+
+class SensorPosition(Enum):
+    UNKNOWN = 0, "?"
+    OUTSIDE = 1, "-"
+    INSIDE = 2, "+"
 
 
 class Position:
     def __init__(
-        self, left_sensor=SENSOR_POSITION_UNKNOWN, right_sensor=SENSOR_POSITION_UNKNOWN
+        self, left_sensor=SensorPosition.UNKNOWN, right_sensor=SensorPosition.UNKNOWN
     ):
         self.left_sensor = left_sensor
         self.right_sensor = right_sensor
 
     def __str__(self):
-        return f"Position({SENSOR_POSITION_TO_STR[self.left_sensor]} {SENSOR_POSITION_TO_STR[self.right_sensor]})"
+        return f"Position({self.left_sensor} {self.right_sensor})"
+
+    def __repr__(self):
+        return f"Position({self.left_sensor}, {self.right_sensor})"
 
     def __eq__(self, other: object) -> bool:
         if self is other:
@@ -36,32 +37,32 @@ class Position:
 
     def is_outside(self):
         return (
-            self.left_sensor == SENSOR_POSITION_OUTSIDE
-            and self.right_sensor == SENSOR_POSITION_OUTSIDE
+            self.left_sensor == SensorPosition.OUTSIDE
+            and self.right_sensor == SensorPosition.OUTSIDE
         )
 
     def is_inside(self):
         return (
-            self.left_sensor == SENSOR_POSITION_INSIDE
-            and self.right_sensor == SENSOR_POSITION_INSIDE
+            self.left_sensor == SensorPosition.INSIDE
+            and self.right_sensor == SensorPosition.INSIDE
         )
 
     def is_left(self):
         return (
-            self.left_sensor == SENSOR_POSITION_OUTSIDE
-            and self.right_sensor == SENSOR_POSITION_INSIDE
+            self.left_sensor == SensorPosition.OUTSIDE
+            and self.right_sensor == SensorPosition.INSIDE
         )
 
     def is_right(self):
         return (
-            self.left_sensor == SENSOR_POSITION_INSIDE
-            and self.right_sensor == SENSOR_POSITION_OUTSIDE
+            self.left_sensor == SensorPosition.INSIDE
+            and self.right_sensor == SensorPosition.OUTSIDE
         )
 
     def is_unknown(self):
         return (
-            self.left_sensor == SENSOR_POSITION_UNKNOWN
-            or self.right_sensor == SENSOR_POSITION_UNKNOWN
+            self.left_sensor == SensorPosition.UNKNOWN
+            or self.right_sensor == SensorPosition.UNKNOWN
         )
 
     def copy(self, position):
@@ -71,59 +72,65 @@ class Position:
     @staticmethod
     def from_sensor_position(left_sensor, right_sensor):
         if (
-            left_sensor == SENSOR_POSITION_OUTSIDE
-            and right_sensor == SENSOR_POSITION_OUTSIDE
+            left_sensor == SensorPosition.OUTSIDE
+            and right_sensor == SensorPosition.OUTSIDE
         ):
             return POSITION_OUTSIDE
 
         if (
-            left_sensor == SENSOR_POSITION_INSIDE
-            and right_sensor == SENSOR_POSITION_INSIDE
+            left_sensor == SensorPosition.INSIDE
+            and right_sensor == SensorPosition.INSIDE
         ):
             return POSITION_INSIDE
 
         if (
-            left_sensor == SENSOR_POSITION_OUTSIDE
-            and right_sensor == SENSOR_POSITION_INSIDE
+            left_sensor == SensorPosition.OUTSIDE
+            and right_sensor == SensorPosition.INSIDE
         ):
             return POSITION_LEFT
 
         if (
-            left_sensor == SENSOR_POSITION_INSIDE
-            and right_sensor == SENSOR_POSITION_OUTSIDE
+            left_sensor == SensorPosition.INSIDE
+            and right_sensor == SensorPosition.OUTSIDE
         ):
             return POSITION_RIGHT
 
         if (
-            left_sensor == SENSOR_POSITION_UNKNOWN
-            or right_sensor == SENSOR_POSITION_UNKNOWN
+            left_sensor == SensorPosition.UNKNOWN
+            or right_sensor == SensorPosition.UNKNOWN
         ):
             return POSITION_UNKNOWN
 
 
 POSITION_OUTSIDE = Position(
-    left_sensor=SENSOR_POSITION_OUTSIDE, right_sensor=SENSOR_POSITION_OUTSIDE
+    left_sensor=SensorPosition.OUTSIDE, right_sensor=SensorPosition.OUTSIDE
 )
 POSITION_INSIDE = Position(
-    left_sensor=SENSOR_POSITION_INSIDE, right_sensor=SENSOR_POSITION_INSIDE
+    left_sensor=SensorPosition.INSIDE, right_sensor=SensorPosition.INSIDE
 )
 POSITION_LEFT = Position(
-    left_sensor=SENSOR_POSITION_OUTSIDE, right_sensor=SENSOR_POSITION_INSIDE
+    left_sensor=SensorPosition.OUTSIDE, right_sensor=SensorPosition.INSIDE
 )
 POSITION_RIGHT = Position(
-    left_sensor=SENSOR_POSITION_INSIDE, right_sensor=SENSOR_POSITION_OUTSIDE
+    left_sensor=SensorPosition.INSIDE, right_sensor=SensorPosition.OUTSIDE
 )
 POSITION_UNKNOWN = Position(
-    left_sensor=SENSOR_POSITION_UNKNOWN, right_sensor=SENSOR_POSITION_UNKNOWN
+    left_sensor=SensorPosition.UNKNOWN, right_sensor=SensorPosition.UNKNOWN
 )
 
 
 class Path:
 
-    def __init__(self):
-        self.positions = [Position(), Position(), Position()]
+    def __init__(self, positions=None):
+        self.positions = positions or [Position(), Position(), Position()]
         self.count = 0
         self.is_outside = False
+
+    def __str__(self):
+        return "Path([{}])".format(",".join([p for p in self.positions]))
+
+    def __repr__(self):
+        return "Path([{}])".format(",".join([p for p in self.positions]))
 
     def current_index(self):
         if self.count == 0:

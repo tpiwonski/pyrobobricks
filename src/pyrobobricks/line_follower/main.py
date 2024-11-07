@@ -4,7 +4,7 @@ from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, multitask, run_task
 
-from .path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
+from .path import Position, SensorPosition
 from .application import (
     Application,
     STRAIGHT_FORWARD,
@@ -31,10 +31,10 @@ async def read_position():
     right_reflection = await right_sensor.reflection()
 
     left_position = (
-        SENSOR_POSITION_OUTSIDE if left_reflection > 25 else SENSOR_POSITION_INSIDE
+        SensorPosition.OUTSIDE if left_reflection > 25 else SensorPosition.INSIDE
     )
     right_position = (
-        SENSOR_POSITION_OUTSIDE if right_reflection > 25 else SENSOR_POSITION_INSIDE
+        SensorPosition.OUTSIDE if right_reflection > 25 else SensorPosition.OUTSIDE
     )
 
     return Position.from_sensor_position(

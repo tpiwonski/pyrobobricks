@@ -1,26 +1,32 @@
+from enum import Enum
+
 from .path import Path
 
 
-COMMAND_STOP = 0
-COMMAND_STRAIGHT_FORWARD = 1
-COMMAND_STRAIGHT_BACKWARD = 2
-COMMAND_TURN_RIGHT = 3
-COMMAND_TURN_LEFT = 4
+class CommandAction(Enum):
+    STOP = 0, 'stop'
+    STRAIGHT_FORWARD = 1, 'straight forward'
+    STRAIGHT_BACKWARD = 2, 'straight backward'
+    TURN_RIGHT = 3, 'turn right'
+    TURN_LEFT = 4, 'turn left'
 
 
 class Command:
-    def __init__(self, command=COMMAND_STOP):
+    def __init__(self, command=CommandAction.STOP):
         self.command = command
 
     def __str__(self):
         return f"Command({self.command})"
 
+    def __repr__(self):
+        return f"Command({self.command})"
 
-STOP = Command(COMMAND_STOP)
-STRAIGHT_FORWARD = Command(COMMAND_STRAIGHT_FORWARD)
-STRAIGHT_BACKWARD = Command(COMMAND_STRAIGHT_BACKWARD)
-TURN_RIGHT = Command(COMMAND_TURN_RIGHT)
-TURN_LEFT = Command(COMMAND_TURN_LEFT)
+
+STOP = Command(CommandAction.STOP)
+STRAIGHT_FORWARD = Command(CommandAction.STRAIGHT_FORWARD)
+STRAIGHT_BACKWARD = Command(CommandAction.STRAIGHT_BACKWARD)
+TURN_RIGHT = Command(CommandAction.TURN_RIGHT)
+TURN_LEFT = Command(CommandAction.TURN_LEFT)
 
 
 class Application:
@@ -66,12 +72,12 @@ class Application:
                         next_move = STRAIGHT_FORWARD
             else:
                 if last_position.is_inside():
-                    # if last_side_position.is_right():
-                    #     next_move = Right
-                    # elif last_side_position.is_left():
-                    #     next_move = Left
-                    # else:
-                    next_move = STRAIGHT_FORWARD
+                    if last_side_position.is_right():
+                        next_move = TURN_RIGHT
+                    elif last_side_position.is_left():
+                        next_move = TURN_LEFT
+                    else:
+                        next_move = STRAIGHT_FORWARD
                 elif last_position.is_right():
                     next_move = TURN_RIGHT
                 elif last_position.is_left():
@@ -82,12 +88,12 @@ class Application:
 
         elif position.is_outside():
             if last_position.is_inside():
-                # if last_side_position.is_right():
-                #     next_move = Left
-                # elif last_side_position.is_left():
-                #     next_move = Right
-                # else:
-                next_move = STRAIGHT_BACKWARD
+                if last_side_position.is_right():
+                    next_move = TURN_LEFT
+                elif last_side_position.is_left():
+                    next_move = TURN_RIGHT
+                else:
+                    next_move = STRAIGHT_BACKWARD
             elif last_position.is_right():
                 next_move = TURN_LEFT
             elif last_position.is_left():
