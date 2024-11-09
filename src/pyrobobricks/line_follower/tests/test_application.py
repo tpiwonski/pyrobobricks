@@ -52,11 +52,26 @@ def test_application_3(application):
         (POSITION_RIGHT, STRAIGHT_FORWARD),
         # (POSITION_LEFT, STRAIGHT_FORWARD),
         (POSITION_OUTSIDE, TURN_LEFT),
-        # (POSITION_INSIDE, TURN_LEFT),
+        (POSITION_INSIDE, TURN_RIGHT),
         # (POSITION_OUTSIDE, TURN_LEFT),
         # (POSITION_OUTSIDE, TURN_LEFT),
         (POSITION_RIGHT, STRAIGHT_FORWARD),
         # (POSITION_LEFT, STRAIGHT_FORWARD),
+    ]
+
+    for i, (position, command) in enumerate(moves):
+        application.process(position)
+        assert application.command == command, f"{i}: {position}"
+
+
+def test_application_4(application):
+    moves = [
+        (POSITION_INSIDE, STRAIGHT_FORWARD),
+        (POSITION_INSIDE, STRAIGHT_FORWARD),
+        (POSITION_OUTSIDE, STRAIGHT_BACKWARD),
+        (POSITION_INSIDE, STRAIGHT_BACKWARD),
+        (POSITION_LEFT, STRAIGHT_FORWARD),
+        (POSITION_OUTSIDE, TURN_RIGHT),
     ]
 
     for i, (position, command) in enumerate(moves):

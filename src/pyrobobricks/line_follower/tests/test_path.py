@@ -1,7 +1,6 @@
 from pyrobobricks.line_follower.path import (
     Position,
-    Path,
-    SensorPosition,
+    Path, SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE,
 )
 
 
@@ -13,7 +12,7 @@ def test_foo():
     assert path.get_position(0) is None
 
     position1 = Position.from_sensor_position(
-        SensorPosition.INSIDE, SensorPosition.INSIDE
+        SENSOR_POSITION_INSIDE, SENSOR_POSITION_INSIDE
     )
     path.add_position(position1)
 
@@ -24,7 +23,7 @@ def test_foo():
     assert path.get_position(0) == path.last_position()
 
     position2 = Position.from_sensor_position(
-        SensorPosition.OUTSIDE, SensorPosition.INSIDE
+        SENSOR_POSITION_OUTSIDE, SENSOR_POSITION_INSIDE
     )
     path.add_position(position2)
 
@@ -38,7 +37,7 @@ def test_foo():
     assert path.get_position(-1).right_sensor == position1.right_sensor
 
     position3 = Position.from_sensor_position(
-        SensorPosition.INSIDE, SensorPosition.OUTSIDE
+        SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE
     )
     path.add_position(position3)
 
