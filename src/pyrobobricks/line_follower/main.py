@@ -1,10 +1,13 @@
-from pybricks.hubs import TechnicHub
 from pybricks.pupdevices import Motor, ColorDistanceSensor
-from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
+from pybricks.parameters import Direction, Port
 from pybricks.robotics import DriveBase
-from pybricks.tools import wait, StopWatch, multitask, run_task
+from pybricks.tools import wait, multitask, run_task
 
-from path import Position, SENSOR_POSITION_INSIDE, SENSOR_POSITION_UNKNOWN, SENSOR_POSITION_OUTSIDE
+from path import (
+    Position,
+    SENSOR_POSITION_INSIDE,
+    SENSOR_POSITION_OUTSIDE,
+)
 from application import (
     Application,
     STRAIGHT_FORWARD,
@@ -20,8 +23,7 @@ right_sensor = ColorDistanceSensor(Port.B)
 left_motor = Motor(Port.C, Direction.CLOCKWISE, [12, 40], True)
 right_motor = Motor(Port.D, Direction.COUNTERCLOCKWISE, [12, 40], True)
 drive = DriveBase(left_motor, right_motor, 42, 110)
-# drive.settings(30, 500, 20, 450)
-drive.settings(40, 300, 40, 300)
+drive.settings(40, 200, 60, 300)
 
 application = Application(drive=drive)
 
@@ -30,11 +32,13 @@ async def read_position():
     left_reflection = await left_sensor.reflection()
     right_reflection = await right_sensor.reflection()
 
+    # print(f"{left_reflection}, {right_reflection}")
+
     left_position = (
         SENSOR_POSITION_OUTSIDE if left_reflection > 25 else SENSOR_POSITION_INSIDE
     )
     right_position = (
-        SENSOR_POSITION_OUTSIDE if right_reflection > 25 else SENSOR_POSITION_OUTSIDE
+        SENSOR_POSITION_OUTSIDE if right_reflection > 25 else SENSOR_POSITION_INSIDE
     )
 
     return Position.from_sensor_position(
