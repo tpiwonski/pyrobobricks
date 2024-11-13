@@ -1,3 +1,4 @@
+from pybricks.hubs import TechnicHub
 from pybricks.pupdevices import Motor, ColorDistanceSensor
 from pybricks.parameters import Direction, Port
 from pybricks.robotics import DriveBase
@@ -24,11 +25,12 @@ left_motor = Motor(Port.C, Direction.CLOCKWISE, [12, 40], True)
 right_motor = Motor(Port.D, Direction.COUNTERCLOCKWISE, [12, 40], True)
 drive = DriveBase(left_motor, right_motor, 42, 110)
 drive.settings(40, 200, 60, 300)
+hub = TechnicHub()
 
-application = Application(drive=drive)
+application = Application()
 
 
-async def read_position():
+async def read_position() -> Position:
     left_reflection = await left_sensor.reflection()
     right_reflection = await right_sensor.reflection()
 
@@ -47,25 +49,39 @@ async def read_position():
 
 
 async def read_position_and_process(app: Application):
+    last_command = STOP
     while True:
         position = await read_position()
-        app.process(position)
-        app.drive.stop()
+        heading = hub.imu.heading()
+        print(f"heading: {heading}")
+        app.process(position, heading)
+        if app.command == TURN_LEFT:
+            if last_command != TURN_LEFT:
+                hub.imu.reset_heading(0)
+                print("reset heading")
+
+        elif app.command == TURN_RIGHT:
+            if last_command != TURN_RIGHT:
+                hub.imu.reset_heading(0)
+                print("reset heading")
+
+        last_command = app.command
+        drive.stop()
         await wait(200)
 
 
 async def execute_command(app):
     while True:
         if app.command == STOP:
-            app.drive.brake()
+            drive.brake()
         elif app.command == STRAIGHT_FORWARD:
-            await app.drive.straight(100)
+            await drive.straight(100)
         elif app.command == STRAIGHT_BACKWARD:
-            await app.drive.straight(-100)
+            await drive.straight(-100)
         elif app.command == TURN_LEFT:
-            await app.drive.turn(-90)
+            await drive.turn(-90)
         elif app.command == TURN_RIGHT:
-            await app.drive.turn(90)
+            await drive.turn(90)
 
 
 async def main(app):

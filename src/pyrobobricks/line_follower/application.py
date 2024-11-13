@@ -1,5 +1,4 @@
-from path import Path
-
+from path import Path, Position
 
 COMMAND_ACTION_STOP = 0
 COMMAND_ACTION_STRAIGHT_FORWARD = 1
@@ -36,12 +35,12 @@ TURN_LEFT = Command(COMMAND_ACTION_TURN_LEFT)
 
 
 class Application:
-    def __init__(self, drive):
-        self.drive = drive
+    def __init__(self):
+        # self.drive = drive
         self.command = STOP
         self.path = Path()
 
-    def process(self, position):
+    def process(self, position: Position, heading: float = 0):
         next_move = STOP
 
         if self.path.count == 0:
@@ -114,5 +113,8 @@ class Application:
             next_move = STRAIGHT_FORWARD
 
         print(f"{last_side_position};{last_position};{position};{next_move}")
+
+        if abs(heading) > 140:
+            print("XXX")
 
         self.command = next_move
