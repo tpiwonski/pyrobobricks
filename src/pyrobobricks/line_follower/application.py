@@ -14,8 +14,8 @@ class Application:
         self.command: Command = STOP
         self.path = Path()
 
-    def process(self, position: Position, heading: float = 0):
-        next_move = STOP
+    def process(self, position: Position, heading: float = 0) -> Command:
+        command = STOP
 
         if self.path.count == 0:
             self.path.add_position(position)
@@ -30,63 +30,64 @@ class Application:
             if self.command.is_command(STRAIGHT_BACKWARD):
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        next_move = TURN_LEFT
+                        command = TURN_LEFT
                     elif last_side_position.is_left():
-                        next_move = TURN_RIGHT
+                        command = TURN_RIGHT
                     else:
-                        next_move = STRAIGHT_BACKWARD
+                        command = STRAIGHT_BACKWARD
                 elif last_position.is_right():
-                    next_move = TURN_LEFT
+                    command = TURN_LEFT
                 elif last_position.is_left():
-                    next_move = TURN_RIGHT
+                    command = TURN_RIGHT
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
                     if last_side_position.is_right():
-                        next_move = TURN_LEFT
+                        command = TURN_LEFT
                     elif last_side_position.is_left():
-                        next_move = TURN_RIGHT
+                        command = TURN_RIGHT
                     else:
-                        next_move = STRAIGHT_FORWARD
+                        command = STRAIGHT_FORWARD
             else:
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        next_move = TURN_RIGHT
+                        command = TURN_RIGHT
                     elif last_side_position.is_left():
-                        next_move = TURN_LEFT
+                        command = TURN_LEFT
                     else:
-                        next_move = STRAIGHT_FORWARD
+                        command = STRAIGHT_FORWARD
                 elif last_position.is_right():
-                    next_move = TURN_RIGHT
+                    command = TURN_RIGHT
                 elif last_position.is_left():
-                    next_move = TURN_LEFT
+                    command = TURN_LEFT
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
-                    next_move = STRAIGHT_FORWARD
+                    command = STRAIGHT_FORWARD
 
         elif position.is_outside():
             if last_position.is_inside():
                 if last_side_position.is_right():
-                    next_move = TURN_LEFT
+                    command = TURN_LEFT
                 elif last_side_position.is_left():
-                    next_move = TURN_RIGHT
+                    command = TURN_RIGHT
                 else:
-                    next_move = STRAIGHT_BACKWARD
+                    command = STRAIGHT_BACKWARD
             elif last_position.is_right():
-                next_move = TURN_LEFT
+                command = TURN_LEFT
             elif last_position.is_left():
-                next_move = TURN_RIGHT
+                command = TURN_RIGHT
             elif last_position.is_outside() or last_position.unknown():
-                next_move = STRAIGHT_FORWARD
+                command = STRAIGHT_FORWARD
 
         elif position.is_right():
-            next_move = STRAIGHT_FORWARD
+            command = STRAIGHT_FORWARD
 
         elif position.is_left():
-            next_move = STRAIGHT_FORWARD
+            command = STRAIGHT_FORWARD
 
-        print(f"{last_side_position};{last_position};{position};{next_move}")
+        print(f"{last_side_position};{last_position};{position};{command}")
 
         if abs(heading) > 140:
             print("XXX")
 
-        self.command = next_move
+        self.command = command
+        return self.command

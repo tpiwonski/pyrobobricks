@@ -1,11 +1,18 @@
-from application import Application
-from commands import STOP, STRAIGHT_BACKWARD, STRAIGHT_FORWARD, TURN_LEFT, TURN_RIGHT
-from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 from pybricks.hubs import TechnicHub
 from pybricks.parameters import Direction, Port
 from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
 from pybricks.tools import multitask, run_task, wait
+
+from application import Application
+from commands import (
+    STOP,
+    STRAIGHT_BACKWARD,
+    STRAIGHT_FORWARD,
+    TURN_LEFT,
+    TURN_RIGHT,
+)
+from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 
 left_sensor = ColorDistanceSensor(Port.A)
 right_sensor = ColorDistanceSensor(Port.B)
@@ -15,7 +22,23 @@ drive = DriveBase(left_motor, right_motor, 42, 110)
 drive.settings(40, 200, 60, 300)
 hub = TechnicHub()
 
-application = Application()
+
+class Executor:
+    def __init__(self):
+        self.command = STOP
+
+    def dispatch_command(self, command):
+        if command.is_command(TURN_LEFT) and not self.command.is_command(TURN_LEFT):
+            hub.imu.reset_heading(0)
+
+        elif command.is_command(
+            TURN_RIGHT
+        ) and not self.command.last_command.is_command(TURN_RIGHT):
+            hub.imu.reset_heading(0)
+
+        drive.stop()
+
+        self.command = command
 
 
 async def read_position() -> Position:
@@ -34,29 +57,16 @@ async def read_position() -> Position:
     )
 
 
-async def read_position_and_process(app: Application):
-    last_command = STOP
+async def loop(app: Application, executor: Executor):
     while True:
         position = await read_position()
         heading = hub.imu.heading()
-        print(f"heading: {heading}")
-        app.process(position, heading)
-        if app.command.is_command(TURN_LEFT):
-            if not last_command.is_command(TURN_LEFT):
-                hub.imu.reset_heading(0)
-                print("reset heading")
-
-        elif app.command.is_command(TURN_RIGHT):
-            if not last_command.is_command(TURN_RIGHT):
-                hub.imu.reset_heading(0)
-                print("reset heading")
-
-        last_command = app.command
-        drive.stop()
+        command = app.process(position, heading)
+        executor.dispatch_command(command)
         await wait(200)
 
 
-async def execute_command(app):
+async def move(executor):
     while True:
         if app.command.is_command(STOP):
             drive.brake()
@@ -70,8 +80,8 @@ async def execute_command(app):
             await drive.turn(90)
 
 
-async def main(app):
-    await multitask(read_position_and_process(app), execute_command(app))
+async def main(app, executor):
+    await multitask(loop(app, executor), move(executor))
 
 
-run_task(main(application))
+run_task(main(Application(), Executor()))
