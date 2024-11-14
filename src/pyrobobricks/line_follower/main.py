@@ -1,23 +1,11 @@
+from application import Application
+from commands import STOP, STRAIGHT_BACKWARD, STRAIGHT_FORWARD, TURN_LEFT, TURN_RIGHT
+from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 from pybricks.hubs import TechnicHub
-from pybricks.pupdevices import Motor, ColorDistanceSensor
 from pybricks.parameters import Direction, Port
+from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
-from pybricks.tools import wait, multitask, run_task
-
-from path import (
-    Position,
-    SENSOR_POSITION_INSIDE,
-    SENSOR_POSITION_OUTSIDE,
-)
-from application import (
-    Application,
-    STRAIGHT_FORWARD,
-    STRAIGHT_BACKWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-    STOP,
-)
-
+from pybricks.tools import multitask, run_task, wait
 
 left_sensor = ColorDistanceSensor(Port.A)
 right_sensor = ColorDistanceSensor(Port.B)
@@ -33,8 +21,6 @@ application = Application()
 async def read_position() -> Position:
     left_reflection = await left_sensor.reflection()
     right_reflection = await right_sensor.reflection()
-
-    # print(f"{left_reflection}, {right_reflection}")
 
     left_position = (
         SENSOR_POSITION_OUTSIDE if left_reflection > 25 else SENSOR_POSITION_INSIDE
@@ -55,13 +41,13 @@ async def read_position_and_process(app: Application):
         heading = hub.imu.heading()
         print(f"heading: {heading}")
         app.process(position, heading)
-        if app.command == TURN_LEFT:
-            if last_command != TURN_LEFT:
+        if app.command.is_command(TURN_LEFT):
+            if not last_command.is_command(TURN_LEFT):
                 hub.imu.reset_heading(0)
                 print("reset heading")
 
-        elif app.command == TURN_RIGHT:
-            if last_command != TURN_RIGHT:
+        elif app.command.is_command(TURN_RIGHT):
+            if not last_command.is_command(TURN_RIGHT):
                 hub.imu.reset_heading(0)
                 print("reset heading")
 
@@ -72,15 +58,15 @@ async def read_position_and_process(app: Application):
 
 async def execute_command(app):
     while True:
-        if app.command == STOP:
+        if app.command.is_command(STOP):
             drive.brake()
-        elif app.command == STRAIGHT_FORWARD:
+        elif app.command.is_command(STRAIGHT_FORWARD):
             await drive.straight(100)
-        elif app.command == STRAIGHT_BACKWARD:
+        elif app.command.is_command(STRAIGHT_BACKWARD):
             await drive.straight(-100)
-        elif app.command == TURN_LEFT:
+        elif app.command.is_command(TURN_LEFT):
             await drive.turn(-90)
-        elif app.command == TURN_RIGHT:
+        elif app.command.is_command(TURN_RIGHT):
             await drive.turn(90)
 
 

@@ -1,18 +1,5 @@
-from pyrobobricks.line_follower.application import (
-    STOP,
-    STRAIGHT_BACKWARD,
-    STRAIGHT_FORWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-)
-from pyrobobricks.line_follower.path import (
-    POSITION_INSIDE,
-    POSITION_LEFT,
-    POSITION_OUTSIDE,
-    POSITION_RIGHT,
-    POSITION_UNKNOWN,
-    Position,
-)
+from commands import STRAIGHT_BACKWARD, STRAIGHT_FORWARD, TURN_LEFT, TURN_RIGHT
+from path import POSITION_INSIDE, POSITION_LEFT, POSITION_OUTSIDE, POSITION_RIGHT
 
 
 def test_application_1(application):
