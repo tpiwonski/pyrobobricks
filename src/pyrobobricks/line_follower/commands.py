@@ -1,64 +1,40 @@
-COMMAND_ACTION_STOP = 0
-COMMAND_ACTION_STRAIGHT_FORWARD = 1
-COMMAND_ACTION_STRAIGHT_BACKWARD = 2
-COMMAND_ACTION_TURN_RIGHT = 3
-COMMAND_ACTION_TURN_LEFT = 4
+STOP = 0
+STRAIGHT_FORWARD = 1
+STRAIGHT_BACKWARD = 2
+TURN_RIGHT = 3
+TURN_LEFT = 4
 
 
 class Command:
-    def __init__(self, action):
+    def __init__(self, action=STOP):
         self.action = action
 
-    def is_command(self, command: "Command") -> bool:
-        return self.action == command.action
+    def stop(self):
+        self.action = STOP
 
+    def straight_forward(self):
+        self.action = STRAIGHT_FORWARD
 
-class Stop(Command):
-    def __init__(self):
-        super().__init__(COMMAND_ACTION_STOP)
+    def straight_backward(self):
+        self.action = STRAIGHT_BACKWARD
 
-    def __str__(self):
-        return "stop"
+    def turn_right(self):
+        self.action = TURN_RIGHT
 
+    def turn_left(self):
+        self.action = TURN_LEFT
 
-class StraightForward(Command):
-    def __init__(self, distance: int = 0):
-        super().__init__(COMMAND_ACTION_STRAIGHT_FORWARD)
-        self.distance = distance
+    def is_stop(self):
+        return self.action == STOP
 
-    def __str__(self):
-        return "straight-forward"
+    def is_straight_forward(self):
+        return self.action == STRAIGHT_FORWARD
 
+    def is_straight_backward(self):
+        return self.action == STRAIGHT_BACKWARD
 
-class StraightBackward(Command):
-    def __init__(self, distance: int = 0):
-        super().__init__(COMMAND_ACTION_STRAIGHT_BACKWARD)
-        self.distance = distance
+    def is_turn_right(self):
+        return self.action == TURN_RIGHT
 
-    def __str__(self):
-        return "straight-backward"
-
-
-class TurnLeft(Command):
-    def __init__(self, angle: int = 0):
-        super().__init__(COMMAND_ACTION_TURN_LEFT)
-        self.angle = angle
-
-    def __str__(self):
-        return "turn-left"
-
-
-class TurnRight(Command):
-    def __init__(self, angle: int = 0):
-        super().__init__(COMMAND_ACTION_TURN_RIGHT)
-        self.angle = angle
-
-    def __str__(self):
-        return "turn-right"
-
-
-STOP = Stop()
-STRAIGHT_FORWARD = StraightForward()
-STRAIGHT_BACKWARD = StraightBackward()
-TURN_LEFT = TurnLeft()
-TURN_RIGHT = TurnRight()
+    def is_turn_left(self):
+        return self.action == TURN_LEFT

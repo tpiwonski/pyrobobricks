@@ -1,7 +1,7 @@
 import pytest
-from application import Application
+from application import Application, State
 
 
 @pytest.fixture
 def application():
-    return Application()
+    return Application(State())

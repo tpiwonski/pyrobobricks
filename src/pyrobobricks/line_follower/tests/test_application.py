@@ -12,9 +12,9 @@ def test_application_1(application):
         (POSITION_LEFT, STRAIGHT_FORWARD),
     ]
 
-    for position, command in moves:
+    for i, (position, command) in enumerate(moves):
         application.process(position)
-        assert application.command == command, f"{i}: {position}"
+        assert application.state.command.action == command, f"{i}: {position}"
 
 
 def test_application_2(application):
@@ -31,7 +31,7 @@ def test_application_2(application):
 
     for i, (position, command) in enumerate(moves):
         application.process(position)
-        assert application.command == command, f"{i}: {position}"
+        assert application.state.command.action == command, f"{i}: {position}"
 
 
 def test_application_3(application):
@@ -48,7 +48,7 @@ def test_application_3(application):
 
     for i, (position, command) in enumerate(moves):
         application.process(position)
-        assert application.command == command, f"{i}: {position}"
+        assert application.state.command.action == command, f"{i}: {position}"
 
 
 def test_application_4(application):
@@ -63,4 +63,4 @@ def test_application_4(application):
 
     for i, (position, command) in enumerate(moves):
         application.process(position)
-        assert application.command == command, f"{i}: {position}"
+        assert application.state.command.action == command, f"{i}: {position}"

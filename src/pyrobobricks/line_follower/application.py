@@ -1,93 +1,99 @@
-from commands import (
-    STOP,
-    STRAIGHT_BACKWARD,
-    STRAIGHT_FORWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-    Command,
-)
+from commands import Command
 from path import Path, Position
 
 
-class Application:
+class State:
+
     def __init__(self):
-        self.command: Command = STOP
         self.path = Path()
+        self._command: Command = Command()
 
-    def process(self, position: Position, heading: float = 0) -> Command:
-        command = STOP
+    @property
+    def command(self):
+        return self._command
 
-        if self.path.count == 0:
-            self.path.add_position(position)
+    @command.setter
+    def command(self, command: Command):
+        self._command.action = command.action
+
+
+class Application:
+    def __init__(self, state: State):
+        self.state = state
+
+    def process(self, position: Position, heading: float = 0):
+        command = Command()
+
+        if self.state.path.count == 0:
+            self.state.path.add_position(position)
             last_position = position
         else:
-            last_position = self.path.last_position()
-            self.path.update_position(position)
+            last_position = self.state.path.last_position()
+            self.state.path.update_position(position)
 
-        last_side_position = self.path.last_side_position()
+        last_side_position = self.state.path.last_side_position()
 
         if position.is_inside():
-            if self.command.is_command(STRAIGHT_BACKWARD):
+            if self.state.command.is_straight_backward():
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        command = TURN_LEFT
+                        command.turn_left()
                     elif last_side_position.is_left():
-                        command = TURN_RIGHT
+                        command.turn_right()
                     else:
-                        command = STRAIGHT_BACKWARD
+                        command.straight_backward()
                 elif last_position.is_right():
-                    command = TURN_LEFT
+                    command.turn_left()
                 elif last_position.is_left():
-                    command = TURN_RIGHT
+                    command.turn_right()
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
                     if last_side_position.is_right():
-                        command = TURN_LEFT
+                        command.turn_left()
                     elif last_side_position.is_left():
-                        command = TURN_RIGHT
+                        command.turn_right()
                     else:
-                        command = STRAIGHT_FORWARD
+                        command.straight_forward()
             else:
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        command = TURN_RIGHT
+                        command.turn_right()
                     elif last_side_position.is_left():
-                        command = TURN_LEFT
+                        command.turn_left()
                     else:
-                        command = STRAIGHT_FORWARD
+                        command.straight_forward()
                 elif last_position.is_right():
-                    command = TURN_RIGHT
+                    command.turn_right()
                 elif last_position.is_left():
-                    command = TURN_LEFT
+                    command.turn_left()
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
-                    command = STRAIGHT_FORWARD
+                    command.straight_forward()
 
         elif position.is_outside():
             if last_position.is_inside():
                 if last_side_position.is_right():
-                    command = TURN_LEFT
+                    command.turn_left()
                 elif last_side_position.is_left():
-                    command = TURN_RIGHT
+                    command.turn_right()
                 else:
-                    command = STRAIGHT_BACKWARD
+                    command.straight_backward()
             elif last_position.is_right():
-                command = TURN_LEFT
+                command.turn_left()
             elif last_position.is_left():
-                command = TURN_RIGHT
+                command.turn_right()
             elif last_position.is_outside() or last_position.unknown():
-                command = STRAIGHT_FORWARD
+                command.straight_forward()
 
         elif position.is_right():
-            command = STRAIGHT_FORWARD
+            command.straight_forward()
 
         elif position.is_left():
-            command = STRAIGHT_FORWARD
+            command.straight_forward()
 
         print(f"{last_side_position};{last_position};{position};{command}")
 
         if abs(heading) > 140:
             print("XXX")
 
-        self.command = command
-        return self.command
+        self.state.command = command

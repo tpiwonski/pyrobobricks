@@ -1,18 +1,11 @@
+from application import Application, State
+from commands import Command
+from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 from pybricks.hubs import TechnicHub
 from pybricks.parameters import Direction, Port
 from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
 from pybricks.tools import multitask, run_task, wait
-
-from application import Application
-from commands import (
-    STOP,
-    STRAIGHT_BACKWARD,
-    STRAIGHT_FORWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-)
-from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 
 left_sensor = ColorDistanceSensor(Port.A)
 right_sensor = ColorDistanceSensor(Port.B)
@@ -25,20 +18,17 @@ hub = TechnicHub()
 
 class Executor:
     def __init__(self):
-        self.command = STOP
+        self.command = Command()
 
-    def dispatch_command(self, command):
-        if command.is_command(TURN_LEFT) and not self.command.is_command(TURN_LEFT):
+    def dispatch_command(self, command: Command):
+        if command.is_turn_left() and not self.command.is_turn_left():
             hub.imu.reset_heading(0)
 
-        elif command.is_command(
-            TURN_RIGHT
-        ) and not self.command.last_command.is_command(TURN_RIGHT):
+        elif command.is_turn_right() and not self.command.is_turn_right():
             hub.imu.reset_heading(0)
-
-        drive.stop()
 
         self.command = command
+        drive.stop()
 
 
 async def read_position() -> Position:
@@ -66,17 +56,17 @@ async def loop(app: Application, executor: Executor):
         await wait(200)
 
 
-async def move(executor):
+async def move(executor: Executor):
     while True:
-        if app.command.is_command(STOP):
+        if executor.command.is_stop():
             drive.brake()
-        elif app.command.is_command(STRAIGHT_FORWARD):
+        elif executor.command.is_straight_forward():
             await drive.straight(100)
-        elif app.command.is_command(STRAIGHT_BACKWARD):
+        elif executor.command.is_straight_backward():
             await drive.straight(-100)
-        elif app.command.is_command(TURN_LEFT):
+        elif executor.command.is_turn_left():
             await drive.turn(-90)
-        elif app.command.is_command(TURN_RIGHT):
+        elif executor.command.is_turn_right():
             await drive.turn(90)
 
 
@@ -84,4 +74,7 @@ async def main(app, executor):
     await multitask(loop(app, executor), move(executor))
 
 
-run_task(main(Application(), Executor()))
+state = State()
+application = Application(state)
+executor = Executor()
+run_task(main(application, executor))
