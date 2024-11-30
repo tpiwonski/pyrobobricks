@@ -1,118 +1,99 @@
-from path import Path
+from commands import Command
+from path import Path, Position
 
 
-COMMAND_ACTION_STOP = 0
-COMMAND_ACTION_STRAIGHT_FORWARD = 1
-COMMAND_ACTION_STRAIGHT_BACKWARD = 2
-COMMAND_ACTION_TURN_RIGHT = 3
-COMMAND_ACTION_TURN_LEFT = 4
+class State:
 
+    def __init__(self):
+        self.path = Path()
+        self._command: Command = Command()
 
-COMMAND_ACTION_TO_STR = {
-    COMMAND_ACTION_STOP: "stop",
-    COMMAND_ACTION_STRAIGHT_FORWARD: "straight forward",
-    COMMAND_ACTION_STRAIGHT_BACKWARD: "straight backward",
-    COMMAND_ACTION_TURN_RIGHT: "turn right",
-    COMMAND_ACTION_TURN_LEFT: u"turn left",
-}
+    @property
+    def command(self):
+        return self._command
 
-
-class Command:
-    def __init__(self, command=COMMAND_ACTION_STOP):
-        self.command = command
-
-    def __str__(self):
-        return f"Command({COMMAND_ACTION_TO_STR[self.command]})"
-
-    def __repr__(self):
-        return f"Command({self.command})"
-
-
-STOP = Command(COMMAND_ACTION_STOP)
-STRAIGHT_FORWARD = Command(COMMAND_ACTION_STRAIGHT_FORWARD)
-STRAIGHT_BACKWARD = Command(COMMAND_ACTION_STRAIGHT_BACKWARD)
-TURN_RIGHT = Command(COMMAND_ACTION_TURN_RIGHT)
-TURN_LEFT = Command(COMMAND_ACTION_TURN_LEFT)
+    @command.setter
+    def command(self, command: Command):
+        self._command.action = command.action
 
 
 class Application:
-    def __init__(self, drive):
-        self.drive = drive
-        self.command = STOP
-        self.path = Path()
+    def __init__(self, state: State):
+        self.state = state
 
-    def process(self, position):
-        next_move = STOP
+    def process(self, position: Position, heading: float = 0):
+        command = Command()
 
-        if self.path.count == 0:
-            self.path.add_position(position)
+        if self.state.path.count == 0:
+            self.state.path.add_position(position)
             last_position = position
-            # was_outside = position.is_outside()
         else:
-            # was_outside = self.path.is_outside
-            last_position = self.path.last_position()
-            self.path.update_position(position)
+            last_position = self.state.path.last_position()
+            self.state.path.update_position(position)
 
-        last_side_position = self.path.last_side_position()
+        last_side_position = self.state.path.last_side_position()
 
         if position.is_inside():
-            if self.command == STRAIGHT_BACKWARD:
+            if self.state.command.is_straight_backward():
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        next_move = TURN_LEFT
+                        command.turn_left()
                     elif last_side_position.is_left():
-                        next_move = TURN_RIGHT
+                        command.turn_right()
                     else:
-                        next_move = STRAIGHT_BACKWARD
+                        command.straight_backward()
                 elif last_position.is_right():
-                    next_move = TURN_LEFT
+                    command.turn_left()
                 elif last_position.is_left():
-                    next_move = TURN_RIGHT
+                    command.turn_right()
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
                     if last_side_position.is_right():
-                        next_move = TURN_LEFT
+                        command.turn_left()
                     elif last_side_position.is_left():
-                        next_move = TURN_RIGHT
+                        command.turn_right()
                     else:
-                        next_move = STRAIGHT_FORWARD
+                        command.straight_forward()
             else:
                 if last_position.is_inside():
                     if last_side_position.is_right():
-                        next_move = TURN_RIGHT
+                        command.turn_right()
                     elif last_side_position.is_left():
-                        next_move = TURN_LEFT
+                        command.turn_left()
                     else:
-                        next_move = STRAIGHT_FORWARD
+                        command.straight_forward()
                 elif last_position.is_right():
-                    next_move = TURN_RIGHT
+                    command.turn_right()
                 elif last_position.is_left():
-                    next_move = TURN_LEFT
+                    command.turn_left()
                 # elif last_position.is_outside() or last_position.is_unknown():
                 else:
-                    next_move = STRAIGHT_FORWARD
+                    command.straight_forward()
 
         elif position.is_outside():
             if last_position.is_inside():
                 if last_side_position.is_right():
-                    next_move = TURN_LEFT
+                    command.turn_left()
                 elif last_side_position.is_left():
-                    next_move = TURN_RIGHT
+                    command.turn_right()
                 else:
-                    next_move = STRAIGHT_BACKWARD
+                    command.straight_backward()
             elif last_position.is_right():
-                next_move = TURN_LEFT
+                command.turn_left()
             elif last_position.is_left():
-                next_move = TURN_RIGHT
+                command.turn_right()
             elif last_position.is_outside() or last_position.unknown():
-                next_move = STRAIGHT_FORWARD
+                command.straight_forward()
 
         elif position.is_right():
-            next_move = STRAIGHT_FORWARD
+            command.straight_forward()
 
         elif position.is_left():
-            next_move = STRAIGHT_FORWARD
+            command.straight_forward()
 
-        print(f"{last_side_position};{last_position};{position};{next_move}")
+        print(f"{last_side_position};{last_position};{position};{command}")
 
-        self.command = next_move
+        if abs(heading) > 140:
+            print("XXX")
+
+        self.state.command = command
