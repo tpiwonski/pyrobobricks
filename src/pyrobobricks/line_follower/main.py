@@ -1,22 +1,25 @@
-from application import Application, State
-from commands import Command
-from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 from pybricks.hubs import TechnicHub
 from pybricks.parameters import Direction, Port
 from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
 from pybricks.tools import multitask, run_task, wait
 
-left_sensor = ColorDistanceSensor(Port.A)
-right_sensor = ColorDistanceSensor(Port.B)
-left_motor = Motor(Port.C, Direction.CLOCKWISE, [12, 40], True)
-right_motor = Motor(Port.D, Direction.COUNTERCLOCKWISE, [12, 40], True)
+from application import Application, State
+from commands import Command
+from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
+
+left_sensor = ColorDistanceSensor(Port.C)
+right_sensor = ColorDistanceSensor(Port.A)
+left_motor = Motor(Port.D, Direction.CLOCKWISE, [12, 40], True)
+right_motor = Motor(Port.B, Direction.COUNTERCLOCKWISE, [12, 40], True)
 drive = DriveBase(left_motor, right_motor, 42, 110)
 drive.settings(40, 200, 60, 300)
 hub = TechnicHub()
 
 
 class Executor:
+
+
     def __init__(self):
         self.command = Command()
 
@@ -51,8 +54,8 @@ async def loop(app: Application, executor: Executor):
     while True:
         position = await read_position()
         heading = hub.imu.heading()
-        command = app.process(position, heading)
-        executor.dispatch_command(command)
+        app.process(position, heading)
+        executor.dispatch_command(app.state.command())
         await wait(200)
 
 

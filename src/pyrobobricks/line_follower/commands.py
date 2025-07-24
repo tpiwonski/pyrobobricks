@@ -8,21 +8,26 @@ TURN_LEFT = 4
 class Command:
     def __init__(self, action=STOP):
         self.action = action
+        self.params = {}
 
     def stop(self):
         self.action = STOP
 
-    def straight_forward(self):
+    def straight_forward(self, distance: int):
         self.action = STRAIGHT_FORWARD
+        self.params = {'distance': distance}
 
-    def straight_backward(self):
+    def straight_backward(self, distance: int):
         self.action = STRAIGHT_BACKWARD
+        self.params = {'distance': distance}
 
-    def turn_right(self):
+    def turn_right(self, angle: int):
         self.action = TURN_RIGHT
+        self.params = {'angle': angle}
 
-    def turn_left(self):
+    def turn_left(self, angle: int):
         self.action = TURN_LEFT
+        self.params = {'angle': angle}
 
     def is_stop(self):
         return self.action == STOP
