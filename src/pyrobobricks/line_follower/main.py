@@ -1,5 +1,5 @@
 from pybricks.hubs import TechnicHub
-from pybricks.parameters import Direction, Port
+from pybricks.parameters import Direction, Port, Color
 from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
 from pybricks.tools import multitask, run_task, wait
@@ -63,14 +63,19 @@ async def move(executor: Executor):
     while True:
         if executor.command.is_stop():
             drive.brake()
+            hub.light.on(Color.RED)
         elif executor.command.is_straight_forward():
             await drive.straight(100)
+            hub.light.on(Color.GREEN)
         elif executor.command.is_straight_backward():
             await drive.straight(-100)
+            hub.light.on(Color.YELLOW)
         elif executor.command.is_turn_left():
             await drive.turn(-90)
+            hub.light.on(Color.ORANGE)
         elif executor.command.is_turn_right():
             await drive.turn(90)
+            hub.light.on(Color.BLUE)
 
 
 async def main(app, executor):
