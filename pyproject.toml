@@ -5,4 +5,4 @@ requires-python = ">=3.11,<3.14"
 
 [tool.poetry.dependencies]
 pybricks = ">=3.6.1"
-pybricksdev = ">=1.2.0"
+pybricksdev = ">=2.3.1"
