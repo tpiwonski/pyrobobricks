@@ -12,12 +12,20 @@ right_motor = Motor(Port.B, Direction.COUNTERCLOCKWISE, [12, 40], True)
 # drive.settings(40, 200, 60, 300)
 hub = TechnicHub()
 
+LEFT_SENSOR_OFFSET = 0
+RIGHT_SENSOR_OFFSET = 0
+
+MAX_BLACK_REFLECTION = 60
+MAX_WHITE_REFLECTION = 100
+MIN_SPEED = 30
+MAX_SPEED = 50
+DELTA_TIME = 1
 
 def calculate_error(reflection):
-    if reflection <= 25:
+    if reflection <= MAX_BLACK_REFLECTION:
         return 0 # 0 = Black line
 
-    return clamp((reflection - 25) / 25, 0, 1) # Scale to 0-1
+    return clamp((reflection - MAX_BLACK_REFLECTION) / (MAX_WHITE_REFLECTION - MAX_BLACK_REFLECTION), 0, 1) # Scale to 0-1
 
 
 def clamp(value, min_value, max_value):
@@ -29,8 +37,8 @@ def map(x, in_min, in_max, out_min, out_max):
 
 
 while True:
-    left_reflection = left_sensor.reflection()
-    right_reflection = right_sensor.reflection()
+    left_reflection = clamp(left_sensor.reflection() + LEFT_SENSOR_OFFSET, 0, 100)
+    right_reflection = clamp(right_sensor.reflection() + RIGHT_SENSOR_OFFSET, 0, 100)
 
     left_error = calculate_error(left_reflection)
     right_error = calculate_error(right_reflection)
@@ -56,22 +64,24 @@ while True:
     # right_dc = (1 if (right_error - left_error) >= 0 else -1) * map(abs(right_error - left_error), 0, 1, 30, 50)
 
     error = right_error - left_error
-    if error < 0:
-        left_dc = 30 + 50 * left_error
-        right_dc = -50 * left_error
-    elif error > 0:
-        left_dc = -50 * right_error
-        right_dc = 30 + 50 * right_error
-    else:
-        left_dc = 30
-        right_dc = 30
+    # if error < 0: # po lewej od linii
+    if left_error > 0 and right_error == 0: # po lewej od linii
+        left_dc = map(left_error, 0, 1, MIN_SPEED, MAX_SPEED) # 30 + 50 * left_error
+        right_dc = -map(right_error, 0, 1, 0, MIN_SPEED) # -50 * left_error
+    # elif error > 0: # po prawej od linii
+    elif right_error > 0 and left_error == 0: # po prawej od linii
+        left_dc = -map(left_error, 0, 1, 0, MIN_SPEED) # -50 * right_error
+        right_dc = map(right_error, 0, 1, MIN_SPEED, MAX_SPEED) # 30 + 50 * right_error
+    else: # na linii
+        left_dc = MIN_SPEED
+        right_dc = MIN_SPEED
 
-    print("left dc=", left_dc, " right dc=", right_dc)
+    print("reflection;", left_reflection, ";", right_reflection, ";", " error;", left_error, ";", right_error, ";", " dc;", left_dc, ";", right_dc)
 
     left_motor.dc(left_dc)
     right_motor.dc(right_dc)
 
-    wait(10)
+    wait(DELTA_TIME)
 
 """
 
