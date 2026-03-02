@@ -1,38 +1,42 @@
-from pybricks.pupdevices import Motor, ColorDistanceSensor
-from pybricks.parameters import Direction, Port
+from pybricks.hubs import TechnicHub
+from pybricks.parameters import Direction, Port, Color
+from pybricks.pupdevices import ColorDistanceSensor, Motor
 from pybricks.robotics import DriveBase
-from pybricks.tools import wait, multitask, run_task
+from pybricks.tools import multitask, run_task, wait
 
-from path import (
-    Position,
-    SENSOR_POSITION_INSIDE,
-    SENSOR_POSITION_OUTSIDE,
-)
-from application import (
-    Application,
-    STRAIGHT_FORWARD,
-    STRAIGHT_BACKWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-    STOP,
-)
+from application import Application, State
+from commands import Command
+from path import SENSOR_POSITION_INSIDE, SENSOR_POSITION_OUTSIDE, Position
 
-
-left_sensor = ColorDistanceSensor(Port.A)
-right_sensor = ColorDistanceSensor(Port.B)
-left_motor = Motor(Port.C, Direction.CLOCKWISE, [12, 40], True)
-right_motor = Motor(Port.D, Direction.COUNTERCLOCKWISE, [12, 40], True)
+left_sensor = ColorDistanceSensor(Port.C)
+right_sensor = ColorDistanceSensor(Port.A)
+left_motor = Motor(Port.D, Direction.CLOCKWISE, [12, 40], True)
+right_motor = Motor(Port.B, Direction.COUNTERCLOCKWISE, [12, 40], True)
 drive = DriveBase(left_motor, right_motor, 42, 110)
 drive.settings(40, 200, 60, 300)
+hub = TechnicHub()
 
-application = Application(drive=drive)
+
+class Executor:
 
 
-async def read_position():
+    def __init__(self):
+        self.command = Command()
+
+    def dispatch_command(self, command: Command):
+        if command.is_turn_left() and not self.command.is_turn_left():
+            hub.imu.reset_heading(0)
+
+        elif command.is_turn_right() and not self.command.is_turn_right():
+            hub.imu.reset_heading(0)
+
+        self.command = command
+        drive.stop()
+
+
+async def read_position() -> Position:
     left_reflection = await left_sensor.reflection()
     right_reflection = await right_sensor.reflection()
-
-    # print(f"{left_reflection}, {right_reflection}")
 
     left_position = (
         SENSOR_POSITION_OUTSIDE if left_reflection > 25 else SENSOR_POSITION_INSIDE
@@ -46,30 +50,39 @@ async def read_position():
     )
 
 
-async def read_position_and_process(app: Application):
+async def loop(app: Application, executor: Executor):
     while True:
         position = await read_position()
-        app.process(position)
-        app.drive.stop()
+        heading = hub.imu.heading()
+        app.process(position, heading)
+        executor.dispatch_command(app.state.command())
         await wait(200)
 
 
-async def execute_command(app):
+async def move(executor: Executor):
     while True:
-        if app.command == STOP:
-            app.drive.brake()
-        elif app.command == STRAIGHT_FORWARD:
-            await app.drive.straight(100)
-        elif app.command == STRAIGHT_BACKWARD:
-            await app.drive.straight(-100)
-        elif app.command == TURN_LEFT:
-            await app.drive.turn(-90)
-        elif app.command == TURN_RIGHT:
-            await app.drive.turn(90)
+        if executor.command.is_stop():
+            drive.brake()
+            hub.light.on(Color.RED)
+        elif executor.command.is_straight_forward():
+            await drive.straight(100)
+            hub.light.on(Color.GREEN)
+        elif executor.command.is_straight_backward():
+            await drive.straight(-100)
+            hub.light.on(Color.YELLOW)
+        elif executor.command.is_turn_left():
+            await drive.turn(-90)
+            hub.light.on(Color.ORANGE)
+        elif executor.command.is_turn_right():
+            await drive.turn(90)
+            hub.light.on(Color.BLUE)
 
 
-async def main(app):
-    await multitask(read_position_and_process(app), execute_command(app))
+async def main(app, executor):
+    await multitask(loop(app, executor), move(executor))
 
 
-run_task(main(application))
+state = State()
+application = Application(state)
+executor = Executor()
+run_task(main(application, executor))

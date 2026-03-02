@@ -1,7 +1,0 @@
-pybricks
-pybricksdev
-pytest
-pip-tools
-pyclean
-black
-isort
